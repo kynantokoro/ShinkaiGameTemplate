@@ -1,3 +1,3 @@
 # ShinkaiGameTemplate
 
-Template Project for making games in lua and love2d.
+Template project for making games in lua and love2d.
