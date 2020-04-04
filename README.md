@@ -1,4 +1,3 @@
-# tempLove_0_1
-template directory
+# ShinkaiGameTemplate
 
-template for creating games with virtual resolution
+Template project for making games in lua and love2d.
