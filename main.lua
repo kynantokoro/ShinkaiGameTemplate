@@ -1,8 +1,6 @@
-push = require "push"
-GAMEWIDTH = 128
-GAMEHEIGHT = 128
+require "src/import"
 
-function love.load() 
+function love.load()
     graphicsInit()
 end 
 

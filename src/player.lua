@@ -1,8 +1,7 @@
 Player = Entity:extend()
 
-function Player:new(x, y)
-    Player.super.new(self, x, y, "player.png")
-    self.image = love.graphics.newImage("player.png")
+function Player:new(x, y, image_path)
+    Player.super.new(self, x, y, image_path)
     self.quad = love.graphics.newQuad(0, 0, 8, 8, self.image:getDimensions())
     self.facing = 1
     self.walk_spd = 1
