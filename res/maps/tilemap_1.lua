@@ -94,7 +94,9 @@ return {
           height = 8,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["image_path"] = "PH.png"
+          }
         },
         {
           id = 2,
@@ -107,7 +109,9 @@ return {
           height = 8,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["image_path"] = "PH.png"
+          }
         },
         {
           id = 5,
@@ -120,7 +124,9 @@ return {
           height = 8,
           rotation = 0,
           visible = true,
-          properties = {}
+          properties = {
+            ["image_path"] = "PH.png"
+          }
         }
       }
     },

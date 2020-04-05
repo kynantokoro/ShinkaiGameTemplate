@@ -2,20 +2,22 @@
 
 Tilemap = Entity:extend()
 
-function Tilemap:new(area, x, y, map_path) --{image_path, map_path}
+function Tilemap:new(area, x, y, map_path) 
     
+    --get the path to the mapdata exported from tiled (with tileset embeded mode) 
     self.map_path = map_path
 
     self.area = area
 
     self.map = require(self.map_path) 
 
-    self.quads = {}
-
+    --get the tileset for the map
     self.tileset = self.map.tilesets[1]
     local tileset = self.tileset
     self.image = love.graphics.newImage("res/maps/" .. tileset.image)
 
+    --set quads for the tileset image 
+    self.quads = {}
     for y = 0, (self.tileset.imageheight / self.tileset.tileheight) - 1 do
         for x = 0, (self.tileset.imagewidth / self.tileset.tilewidth) - 1 do 
             local quad = love.graphics.newQuad(
@@ -30,8 +32,8 @@ function Tilemap:new(area, x, y, map_path) --{image_path, map_path}
         end
     end 
 
+    --parse the tiled map data and create a single SpriteBatch drawable
     self.mapBatch = love.graphics.newSpriteBatch(self.image, 128, "static")
-
     for i, layer in ipairs(self.map.layers) do 
         if layer.type == "tilelayer" then 
             for y = 0, layer.height - 1 do 
@@ -53,16 +55,17 @@ function Tilemap:new(area, x, y, map_path) --{image_path, map_path}
                     end 
                 end 
             end 
+    
+            --add objectgroup layer's object to the room
         elseif layer.type == "objectgroup" then 
             for i, object in ipairs(layer.objects) do 
                 local game_object = object.type 
+                local image_path = object.properties["image_path"]
                 print(game_object)
-                area:addGameObject(game_object, object.x, object.y, {image_path = "res/PH.png"})
+                area:addGameObject(game_object, object.x, object.y, "res/atlas/" .. image_path)
             end 
         end
     end
-
-    --self.tileset = self.map.tilesets[1]
 
 end 
 
@@ -74,20 +77,9 @@ function Tilemap:draw()
     love.graphics.draw(self.mapBatch)
 end 
 
+--currently not working FIX!!
 function Tilemap:getAtPixel(x, y)
     local tx = math.floor(x / GRID) + 1
     local ty = math.floor(y / GRID) + 1
     return self.map[ty][tx] 
-end 
-
-function Tilemap:loadTiledMap(map_path) 
-
-    local map = require(map_path) 
-
-    map.quads = {}
-
-    local tileset = map.tilesets[1]
-    print(tileset.imagewidth)
-
-    return map 
 end 

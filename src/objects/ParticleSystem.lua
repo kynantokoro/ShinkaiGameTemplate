@@ -1,3 +1,5 @@
+--Base class for any kind of particle effects (fire, trail, etc..)
+
 ParticleSystem = Entity:extend()
 
 function ParticleSystem:new(area, x, y, image_path, preset_name) 
@@ -29,12 +31,11 @@ function ParticleSystem:new(area, x, y, image_path, preset_name)
         update = function (dt) 
             if input:down("right") then self.x = self.x+1 elseif input:down("left") then self.x = self.x-1 end 
             psystem:update(dt)
-            psystem:setPosition( self.x, self.y )
+            psystem:setPosition( self.x, self.y)
             if input:down("jump") then  psystem:start() else psystem:stop() end  
         end, 
         draw = function () 
             love.graphics.draw(psystem)
-            love.graphics.print(self.x)
         end 
     }
     self.preset = preset_name
@@ -49,7 +50,3 @@ end
 function ParticleSystem:draw()
     self.presets[self.preset].draw()
 end
-
-function ParticleSystem:setPreset(preset_name) 
-    
-end 

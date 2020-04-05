@@ -1,9 +1,8 @@
 Test2 = Entity:extend()
 
-function Test2:new(area, x, y, opts)--image_path
+function Test2:new(area, x, y, image_path)--image_path
     Test.super.new(self, area, x, y)
-    local opts = opts or {}
-    if opts then for k, v in pairs(opts) do self[k] = v end end
+    self.image_path = image_path
 
     self.image = love.graphics.newImage(self.image_path)
 end 

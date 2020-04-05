@@ -1,26 +1,28 @@
 function love.load()
+    consoleLine() 
+    print("love.load()")
 
     --import libraries and CONSTANTS
     require "src/import"
 
     graphicsInit()
 
-    bindInput()
+    inputInit()
 
     current_room = nil
 
     --load objects
     local object_files = {}
-    recureiveEnumerate("objects", object_files)
+    recureiveEnumerate("src/objects", object_files)
     requireFiles(object_files)
 
     --load rooms
     local room_files = {}
-    recureiveEnumerate("rooms", room_files)
+    recureiveEnumerate("src/rooms", room_files)
     requireFiles(room_files)
 
-    gotoRoom("MainMenu")
-
+    gotoRoom("FirstRoom")
+    consoleLine() 
 end
 
 function love.update(dt)
@@ -49,14 +51,19 @@ function graphicsInit()
 
     push:setupScreen(GAMEWIDTH, GAMEHEIGHT, windowWidth, windowHeight)
 
+    print("graphics initialized")
+
 end 
 
-function bindInput() 
+function inputInit() 
     input:bind("left", "left")
     input:bind("right", "right")
     input:bind("up", "up")
     input:bind("space", "jump")
     input:bind("down", "down")
+
+    print("input initialized")
+
 end
 
 --this function loops throgh item in a folder and list it in a table
@@ -77,23 +84,29 @@ end
 --loop through a list and require those file
 function requireFiles(files)
     for _, file in ipairs(files) do
-        print(file)
+        print("loaded :" .. file)
         local file = file:sub(1, -5)
         require(file)
     end
 end
 
 function gotoRoom(room_type, ...)
+    print("current_room is :" ..  room_type)
     current_room = _G[room_type](...)
 end 
 
 
 function love.resize(w, h)
     push:resize(w, h)
+    print("resized " .. " w : " .. w .. " h : " .. h)
 end
 
 function love.keyreleased(key) 
     if key == "escape" then 
         love.event.quit()
     end 
+end 
+
+function consoleLine() 
+    print("--------------------------")
 end 
