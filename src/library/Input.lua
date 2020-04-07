@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 ]]--
 
-local input_path = (...):match('(.-)[^%.]+$') .. '.'
+--local input_path = (...):match('(.-)[^%.]+$') .. '.'
 local Input = {}
 Input.__index = Input
 

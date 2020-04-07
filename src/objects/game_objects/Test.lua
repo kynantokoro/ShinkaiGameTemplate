@@ -1,15 +1,14 @@
 Test = Entity:extend()
 
-function Test:new(area, x, y, image_path)
+function Test:new(area, x, y, animation_path, animation_tag)
     Test.super.new(self, area, x, y)
-    self.image_path = image_path
-    self.image = love.graphics.newImage(self.image_path)
+    self.sprite = peachy.new(animation_path, animation_tag)
 end 
 
-function Test:update()
-    
+function Test:update(dt)
+    self.sprite:update(dt)
 end 
 
 function Test:draw()
-    love.graphics.draw(self.image, self.x, self.y)
+    self.sprite:draw()
 end 
