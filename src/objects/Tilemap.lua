@@ -9,7 +9,14 @@ function Tilemap:new(area, x, y, map_path)
 
     self.area = area
 
+    self.x = x 
+    self.y = y
+
     self.map = require(self.map_path) 
+    self.map_width = self.map.width 
+    self.map_height = self.map.height 
+    self.tile_width = self.map.tilewidth 
+    self.tile_height = self.map.tileheight
 
     --get the tileset for the map
     self.tileset = self.map.tilesets[1]
@@ -78,9 +85,14 @@ function Tilemap:draw()
     love.graphics.draw(self.mapBatch)
 end 
 
---currently not working FIX!!
 function Tilemap:getAtPixel(x, y)
-    local tx = math.floor(x / GRID) + 1
-    local ty = math.floor(y / GRID) + 1
-    return self.map[ty][tx] 
+    local tx = math.floor(x / GRID)
+    local ty = math.floor(y / GRID)
+    local base_layer = self.map.layers[1]
+    local index = (tx + ty * base_layer.width) + 1
+    return base_layer.data[index]
+end 
+
+function Tilemap:getBounds() 
+    return self.x, self.y, self.map.width * self.map.tilewidth, self.map.height * self.map.tileheight
 end 
