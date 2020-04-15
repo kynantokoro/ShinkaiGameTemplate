@@ -27,3 +27,12 @@ function Area:addGameObject(game_object_type, x, y, a, b, c, d, e)
     table.insert( self.game_objects, game_object)
     return game_object
 end 
+
+function Area:getGameObjects(callback)
+    local match_objects = {}
+    for i = #self.game_objects, 1, -1 do 
+        local game_object = self.game_objects[i]
+        if callback(game_object) == true then table.insert(match_objects, game_object) end 
+    end
+    return match_objects
+end 
