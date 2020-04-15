@@ -9,6 +9,11 @@ function love.load()
 
     inputInit()
 
+    audioInit()
+
+    --global timer 
+    t = 0
+
     current_room = nil
 
     --load objects
@@ -26,32 +31,60 @@ function love.load()
 end
 
 function love.update(dt)
+    
+    --increment global timer 
+    t = t + 1
 
     if current_room then current_room:update(dt) end 
-
+    vEffect.pixelate.size = {0.0001+math.sin(t)*0.14, 0.0001+math.sin(t)*0.14}
 end 
 
 function love.draw() 
+    love.graphics.setCanvas(vCanvas)
+    vEffect(function()
+        love.graphics.setColor(1, 1, 1, 0.1)
+        love.graphics.rectangle("fill", 0, 0, GAMEWIDTH, GAMEHEIGHT)
+        love.graphics.setColor(1, 1, 1, 1)
+        -------------GAME------------
 
-    push:start()
-
+        --draw things on the virtual canvas
         if current_room then current_room:draw() end 
 
-    push:finish()
+        -------------GAME------------
+    end)
+    love.graphics.setCanvas()
+    cEffect(function()
+        --scale the vCanvas
+        love.graphics.push()
+        love.graphics.scale(GAMEZOOM, GAMEZOOM)
+        --draw the vCanvas
+        --set the x_scale to 2 if mood is ATARI
+        love.graphics.draw(vCanvas, 0, 0, 0, 1, 1)
+        love.graphics.pop()
+    end)
+    -------------GUI------------
 
     love.graphics.print(love.timer.getFPS())
+
+    -------------GUI------------
+
 end 
 
 function graphicsInit()
+    --shaders initialize 
+    cEffect = moonshine(GAMEWIDTH*GAMEZOOM, GAMEHEIGHT*GAMEZOOM, moonshine.effects.chromasep).chain(moonshine.effects.crt).chain(moonshine.effects.fastgaussianblur)
+    vEffect = moonshine(GAMEWIDTH, GAMEHEIGHT, moonshine.effects.pixelate)
+    cEffect.fastgaussianblur.sigma = -1
+    cEffect.crt.scaleFactor = {0.93, 0.93}
+    cEffect.chromasep.radius = 1
 
     --graphics initialization
-    local windowWidth, windowHeight = love.graphics.getDimensions()
 
     love.graphics.setDefaultFilter("nearest")
 
-    push:setupScreen(GAMEWIDTH, GAMEHEIGHT, windowWidth, windowHeight)
-
     camera = Camera(0, 0, GAMEWIDTH, GAMEHEIGHT)
+
+    vCanvas = love.graphics.newCanvas(GAMEWIDTH, GAMEHEIGHT)
 
     fnt = love.graphics.newFont("res/font/TimesNewPixel.fnt", "res/font/TimesNewPixel_0.png")
     love.graphics.setFont(fnt)
@@ -80,6 +113,15 @@ function inputInit()
     print("input initialized")
 
 end
+
+function audioInit() 
+    love.audio.setEffect("myReverb", {type = "reverb", gain = 0.5, density = 1, decaytime = 1})
+    snd_noise = love.audio.newSource("res/tracker/gamenoise.it", "stream")
+    snd_noise:setEffect("myReverb")
+
+    love.audio.play(snd_noise)
+    love.audio.setVolume(0.8)
+end 
 
 --this function loops throgh item in a folder and list it in a table
 function recureiveEnumerate(folder, file_list) 
@@ -112,7 +154,6 @@ end
 
 
 function love.resize(w, h)
-    push:resize(w, h)
     print("resized " .. " w : " .. w .. " h : " .. h)
 end
 

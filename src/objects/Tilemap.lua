@@ -61,8 +61,9 @@ function Tilemap:new(area, x, y, map_path)
             for i, object in ipairs(layer.objects) do 
                 local game_object = object.type 
                 local image_path = object.properties["image_path"]
+                local initial_tag = object.properties["initial_tag"]
                 print(game_object)
-                area:addGameObject(game_object, object.x, object.y, "res/atlas/" .. image_path)
+                area:addGameObject(game_object, object.x, object.y, image_path, initial_tag)
             end 
         end
     end

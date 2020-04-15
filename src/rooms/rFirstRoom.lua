@@ -1,27 +1,35 @@
 FirstRoom = Object:extend()
 
 function FirstRoom:new()
-    consoleLine()
+
     print("FirstRoom:new()")
 
     --initialize the room here!
     self.area = Area(self)
     
-    self.area:addGameObject("Test", 32, 32, "res/sprite/FASTRUN.json", "FASTRUN")
+    self.tilemap = Tilemap(self.area, 0, 0, "res/maps/tilemap_1")
 
-    consoleLine() 
+    print("tilemaploaded")
+
+    self.player = self.area:addGameObject("Test", GAMEWIDTH/2, GAMEHEIGHT/2, "res/sprite/FASTRUN.json", "FASTRUN")
+
+    self.particle = self.area:addGameObject("ParticleSystem", GAMEWIDTH/2, GAMEHEIGHT/2, "res/FX/particle.png", "FIRE")
+
 end 
 
 function FirstRoom:update(dt) 
     self.area:update(dt)
-    if input:pressed("left") then print("asd") end 
+    camera:update(dt)
+    camera:follow(self.player.x, self.player.y)
 end 
 
 function FirstRoom:draw() 
 
     camera:attach()
-
+    
     self.area:draw()
+
+    self.tilemap:draw()
 
     camera:detach()
 
