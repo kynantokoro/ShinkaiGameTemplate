@@ -1,12 +1,13 @@
 Player = Entity:extend()
 
-function Player:new(x, y, image_path)
-    Player.super.new(self, x, y, image_path)
-    self.quad = love.graphics.newQuad(0, 0, 8, 8, self.image:getDimensions())
+function Player:new(area, x, y, animation_path, animation_tag, collision_map)
+    Player.super.new(self, area, x, y)
+
+    self.sprite = peachy.new(animation_path, animation_tag)
     self.facing = 1
-    self.walk_spd = 1
+    self.walk_spd = 0.4
     self.hsp = 0
-    self.max_hsp = 2
+    self.max_hsp = 1
     self.vsp = 0
     self.drag = 0.35
     self.hsp_decimal = 0
@@ -20,24 +21,20 @@ function Player:new(x, y, image_path)
             
             self:calculateMovement()
 
-            if self.hsp ~= 0 then self.state = "WALK" end 
-            
-            --change to ducking image 
-            if down then 
-                self.quad = love.graphics.newQuad(8, 0, 8, 8, self.image:getWidth(), self.image:getHeight())
-            else 
-                self.quad = love.graphics.newQuad(0, 0, 8, 8, self.image:getWidth(), self.image:getHeight())
-            end
+            --if self.hsp ~= 0 then self.state = "WALK" end 
 
-            if jump then
+            if input:pressed("jump") then
+                
                 --jump on this frame and change state to "JUMP"
                 self:jumped()
             end 
 
             self:Collisions()
+
+            self.sprite:update(dt)
         end,
         draw = function()
-            love.graphics.draw(self.image, self.quad, self.x, self.y, 0, 1, self.image_yscale, 0, 0)
+            self.sprite:draw(self.x, self.y)
         end 
     }
     local WALK = {
@@ -69,20 +66,14 @@ function Player:new(x, y, image_path)
             
             self:calculateMovement()
 
-            if self.hsp ~= 0 then self.state = "WALK" else self.state = "IDLE" end
+            --if self.hsp ~= 0 then self.state = "WALK" else self.state = "IDLE" end
 
-            if jump then self:jumped() end
-
-            if down then 
-                self.quad = love.graphics.newQuad(8, 0, 8, 8, self.image:getWidth(), self.image:getHeight())
-            else 
-                self.quad = love.graphics.newQuad(0, 0, 8, 8, self.image:getWidth(), self.image:getHeight())
-            end
+            if input:pressed("jump") then self:jumped() end
 
             self:Collisions()
         end,
         draw = function()
-            love.graphics.draw(self.image, self.quad, self.x, self.y, 0, 1, self.image_yscale, 0, 0)
+            self.sprite:draw(self.x, self.y)
         end
     }
     self.states["IDLE"] = IDLE 
@@ -91,8 +82,10 @@ function Player:new(x, y, image_path)
     self.state = "IDLE"
 end 
 
-function Player:update()
+function Player:update(dt)
     self.states[self.state].update(dt)
+    camera:follow(self.x+100, self.y)
+    player_state = self.state
 end 
 
 function Player:draw()
@@ -104,12 +97,12 @@ function Player:calculateMovement()
     local isDrag = false
 
     --calculate horizontal movement
-    if left and right then 
+    if input:down("left") and input:down("right") then 
         isDrag = true
-    elseif left then 
+    elseif input:down("left") then 
         self.hsp = self.hsp - self.walk_spd
         isDrag = false 
-    elseif right then 
+    elseif input:down("right") then 
         self.hsp = self.hsp + self.walk_spd
         isDrag = false 
     else 
@@ -149,28 +142,42 @@ function Player:Collisions()
     local side
     if self.hsp > 0 then side = self.x + GRID else side = self.x end 
     --set collision points (top and bottom) 
-    local t1 = tilemap:getAtPixel(side + self.hsp, self.y)
-    local t2 = tilemap:getAtPixel(side + self.hsp, self.y+GRID)
+    local t1 = colmap:getAtPixel(side + self.hsp, self.y)
+    local t2 = colmap:getAtPixel(side + self.hsp, self.y+GRID)
+    local t3 = colmap:getAtPixel(side + self.hsp, self.y+(GRID/2))
 
-    if t1 ~= 0 and t2 ~= 0 then 
+    if t1 ~= 0 or t2 ~= 0 or t3 ~= 0 then 
         --collision found 
-        if self.hsp > 0 then self.x = self.x - (self.x % GRID) + GRID - 1 + 0.51
+        if self.hsp > 0 then 
+            if self.x % GRID ~= 0 then 
+                self.x = self.x - (self.x % GRID) + GRID
+                print(self.x)
+            else 
+                self.x = self.x
+            print(self.x)
+            end 
         else self.x = self.x - (self.x % GRID) - (side - self.x) end 
         self.hsp = 0
-    end 
+    end
 
     self.x = self.x + self.hsp
 
     --vertical collisions
     local side 
-    if self.vsp > 0 then side = self.y + GRID else side = self.y  end 
+    if self.vsp > 0 then side = self.y + (GRID*2) else side = self.y  end 
     --set collision points(left and right)
-    local t1 = tilemap:getAtPixel(self.x, side + self.vsp)
-    local t2 = tilemap:getAtPixel(self.x+GRID, side + self.vsp)
+    local t1 = colmap:getAtPixel(self.x, side + self.vsp)
+    local t2 = colmap:getAtPixel(self.x+GRID, side + self.vsp)
 
-    if t1 ~= 0 and t2 ~= 0 then 
+    if t1 ~= 0 or t2 ~= 0 then 
         --collision found 
-        if self.vsp > 0 then self.y = self.y - (self.y % GRID) + GRID - 1 + 0.51 end 
+        if self.vsp > 0 then
+            if self.y % GRID ~= 0 then 
+                self.y = self.y - (self.y % GRID) + GRID
+            else 
+                self.y = self.y
+            end 
+        end 
         self.vsp = 0
     end 
 
@@ -185,16 +192,15 @@ function Player:jumped()
         self.state = "JUMP"
         self.vsp = self.jump_spd
         self.jumps = self.jumps - 1
-        jumpSound:play()
     end 
 end 
 
 function Player:onGround()
-    local side = self.y + GRID 
-    local t1 = tilemap:getAtPixel(self.x, side + 1)
-    local t2 = tilemap:getAtPixel(self.x + GRID, side + 1)
+    local side = self.y + (GRID*2) 
+    local t1 = colmap:getAtPixel(self.x, side + 1)
+    local t2 = colmap:getAtPixel(self.x + GRID, side + 1)
     
-    if t1 == 1 and t2 == 1 then 
+    if t1 ~= nil and t2 ~= nil then 
         return true 
     else 
         return false 

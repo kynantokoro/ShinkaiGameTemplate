@@ -36,32 +36,31 @@ function love.update(dt)
     t = t + 1
 
     if current_room then current_room:update(dt) end 
-    vEffect.pixelate.size = {0.0001+math.sin(t)*0.14, 0.0001+math.sin(t)*0.14}
 end 
 
 function love.draw() 
     love.graphics.setCanvas(vCanvas)
-    vEffect(function()
-        love.graphics.setColor(1, 1, 1, 0.1)
-        love.graphics.rectangle("fill", 0, 0, GAMEWIDTH, GAMEHEIGHT)
-        love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.clear()
+    --vEffect(function()
         -------------GAME------------
 
         --draw things on the virtual canvas
         if current_room then current_room:draw() end 
 
         -------------GAME------------
-    end)
+    --end)
     love.graphics.setCanvas()
-    cEffect(function()
+    --cEffect(function()
         --scale the vCanvas
         love.graphics.push()
-        love.graphics.scale(GAMEZOOM, GAMEZOOM)
+        love.graphics.translate(canvas_offset.x, canvas_offset.y)
+        love.graphics.scale(scale.x, scale.y)
         --draw the vCanvas
         --set the x_scale to 2 if mood is ATARI
         love.graphics.draw(vCanvas, 0, 0, 0, 1, 1)
         love.graphics.pop()
-    end)
+    --end)
+    love.graphics.translate(canvas_offset.x, canvas_offset.y)
     -------------GUI------------
 
     love.graphics.print(love.timer.getFPS())
@@ -71,16 +70,35 @@ function love.draw()
 end 
 
 function graphicsInit()
-    --shaders initialize 
-    cEffect = moonshine(GAMEWIDTH*GAMEZOOM, GAMEHEIGHT*GAMEZOOM, moonshine.effects.chromasep).chain(moonshine.effects.crt).chain(moonshine.effects.fastgaussianblur)
-    vEffect = moonshine(GAMEWIDTH, GAMEHEIGHT, moonshine.effects.pixelate)
-    cEffect.fastgaussianblur.sigma = -1
-    cEffect.crt.scaleFactor = {0.93, 0.93}
-    cEffect.chromasep.radius = 1
-
-    --graphics initialization
 
     love.graphics.setDefaultFilter("nearest")
+
+    pscale = love.window.getDPIScale()
+
+    local windowWidth, windowHeight = love.graphics.getDimensions()
+
+    scale = {
+        x = windowWidth / (GAMEWIDTH),
+        y = windowHeight / GAMEHEIGHT
+    }
+
+    gamezoom = math.floor(math.min(scale.x, scale.y))
+    if gamezoom <= 1 then gamezoom = 1 end
+
+    canvas_offset = {
+        x = (scale.x - gamezoom) * (GAMEWIDTH/2),
+        y = (scale.y - gamezoom) * (GAMEHEIGHT/2)
+    }
+
+    scale.x, scale.y = gamezoom, gamezoom
+
+    gwidth = windowWidth - (canvas_offset.x * 2)
+    gheight = windowHeight - (canvas_offset.y * 2)
+
+    --shaders initialize 
+    --cEffect = moonshine(windowWidth, windowHeight, moonshine.effects.chromasep)
+    --vEffect = moonshine(GAMEWIDTH*2, GAMEHEIGHT, moonshine.effects.scanlines)
+    --graphics initialization
 
     camera = Camera(0, 0, GAMEWIDTH, GAMEHEIGHT)
 
@@ -89,9 +107,16 @@ function graphicsInit()
     fnt = love.graphics.newFont("res/font/TimesNewPixel.fnt", "res/font/TimesNewPixel_0.png")
     love.graphics.setFont(fnt)
 
+    if toFullscreen ~= true then
+        canvas_offset.x = 0
+        canvas_offset.y = 0 
+        love.window.updateMode( gwidth, gheight)
+    end
+
+
     print("graphics initialized")
 
-end 
+end  
 
 function inputInit() 
     input:bind("left", "left")
@@ -108,6 +133,14 @@ function inputInit()
         local counts = type_count()
         for k, v in pairs(counts) do print(k, v) end
         consoleLine() 
+    end)
+
+    input:bind('f11', function()
+        switchFullscreen() 
+    end)
+
+    input:bind('f', function()
+        switchFullscreen() 
     end)
 
     print("input initialized")
@@ -155,6 +188,7 @@ end
 
 function love.resize(w, h)
     print("resized " .. " w : " .. w .. " h : " .. h)
+    graphicsInit()
 end
 
 function love.keyreleased(key) 
@@ -205,4 +239,18 @@ function type_name(o)
 	global_type_table[0] = "table"
     end
     return global_type_table[getmetatable(o) or 0] or "Unknown"
+end
+
+function switchFullscreen()
+    local dWidth, dHeight = love.window.getDesktopDimensions()
+    
+    toFullscreen = not love.window.getFullscreen()
+
+    if toFullscreen then print("now full screen" .. dWidth .. dHeight) 
+    else print("exit full screen ") end
+
+    love.window.setFullscreen(toFullscreen, "desktop")
+
+    graphicsInit()
+
 end
